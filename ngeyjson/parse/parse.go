@@ -13,8 +13,8 @@ Design planning:
   For json,the key of the operation is used as a constant comparison.
   And the value of v corresponding to k is taken as the obtained result value.
   Generally, the value of key is relatively small, while the value of v may be relatively large.
-  Therefore, it is considered to design the value of v as a digital range of strings without assigning values first,
-  which reduces copying and improves efficiency.
+  it is considered to design the value of v as a digital range of strings without assigning values first,
+
 
 eg:
  json: `{"foo":[{"bar":{"baz":123,"x":"434"},"y":[]},[null, false]],"qwe":false}`
@@ -280,6 +280,39 @@ func (node *Node) checkNumber() error {
 	return nil
 }
 
+func (node *Node) parsenewstring(start, end int32, t Type) (string, error) {
+	var newstart, newend int = -1, -1
+	var cs, ce uint8
+
+	cs = '{'
+	ce = '}'
+
+	if t == TypeArray {
+		cs = '['
+		ce = ']'
+	} else if t == typeRawString || t == TypeString {
+		cs = '"'
+		ce = '"'
+	}
+
+	for i := int(start); i >= 0; i-- {
+		if node.p.s[i] == cs {
+			newstart = i
+			break
+		}
+	}
+	for i := int(end); i < len(node.p.s); i++ {
+		if node.p.s[i] == ce {
+			newend = i
+			break
+		}
+	}
+	if newstart < 0 || newend < 0 {
+		return "", fmt.Errorf("node.string %s parse err", t.String())
+	}
+	return node.p.s[newstart : newend+1], nil
+}
+
 func (node *Node) string() (string, error) {
 	if node.value == nil || node.err != nil {
 		if node.err != nil {
@@ -304,18 +337,22 @@ func (node *Node) string() (string, error) {
 
 	s := node.p.s[start:end]
 	var dst []byte
+
 	switch node.value.t {
 	case TypeNumber:
 		return s, nil
-	case TypeString:
+	case TypeString: //
+		if !hasSpecialChars(s) {
+			return node.parsenewstring(start, end, node.value.t)
+		}
 		dst = escapeString(dst, s)
 		return b2s(dst), nil
 	case TypeArray:
-		return fmt.Sprintf("[%s]", s), nil
+		return node.parsenewstring(start, end, node.value.t)
 	case TypeObject:
-		return fmt.Sprintf("{%s}", s), nil
+		return node.parsenewstring(start, end, node.value.t)
 	case typeRawString:
-		return fmt.Sprintf("\"%s\"", s), nil
+		return node.parsenewstring(start, end, node.value.t)
 	}
 	return s, nil
 }
@@ -512,6 +549,7 @@ func parseValue(s string, c *cache, depth int, soffset *int) (*Value, string, er
 		if len(s) < len("true") || s[:len("true")] != "true" {
 			return nil, s, fmt.Errorf("unexpected value found: %q", s)
 		}
+		*soffset += 4
 		return valueTrue, s[len("true"):], nil
 	}
 
@@ -519,6 +557,7 @@ func parseValue(s string, c *cache, depth int, soffset *int) (*Value, string, er
 		if len(s) < len("false") || s[:len("false")] != "false" {
 			return nil, s, fmt.Errorf("unexpected value found: %q", s)
 		}
+		*soffset += 5
 		return valueFalse, s[len("false"):], nil
 	}
 
@@ -535,6 +574,7 @@ func parseValue(s string, c *cache, depth int, soffset *int) (*Value, string, er
 			}
 			return nil, s, fmt.Errorf("unexpected value found: %q", s)
 		}
+		*soffset += 4
 		return valueNull, s[len("null"):], nil
 	}
 
@@ -662,6 +702,7 @@ func parseObject(s string, c *cache, depth int, soffset *int) (*Value, string, e
 		}
 		if s[0] == '}' {
 			o.epos = int32(*soffset)
+			*soffset++
 			return o, s[1:], nil
 		}
 		return nil, s, fmt.Errorf("missing ',' after object value")

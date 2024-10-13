@@ -69,6 +69,51 @@ func TestValueFloat64(t *testing.T) {
 	fmt.Println(f)
 }
 
+func TestValueString(t *testing.T) {
+
+	t.Run("teststring1", func(t *testing.T) {
+		str := `{"id":10,"orderNum":"100200300","money":99.99,"payTime":"2021-12-28T23:44:36.258311+08:00","extend":{"name":"zhangsan"}}`
+		p, err := Parse([]byte(str))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		vstr, err := p.Get("extend").String()
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(vstr)
+	})
+
+	t.Run("teststring2", func(t *testing.T) {
+		str := `{"ID":1,"Name":"Reds","Colors":["Crimson","Red","Ruby","Maroon"]}`
+		p, err := Parse([]byte(str))
+		if err != nil {
+			t.Fatal(err)
+		}
+		vstr, err := p.Get("Colors").String()
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(vstr)
+	})
+
+	t.Run("teststring3", func(t *testing.T) {
+		str := `{"foo":[{"bar":{"baz":123,"x":"434"},"y":[]},[null, false]],"qwe":false}`
+		p, err := Parse([]byte(str))
+		if err != nil {
+			t.Fatal(err)
+		}
+		vstr, err := p.Get("foo").String()
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(vstr)
+
+	})
+
+}
+
 func TestValueBool(t *testing.T) {
 	s := `{"foo":[{"bar":{"baz":123,"x":"434"},"y":[]},[null, false]],"qwe":false}`
 	v, err := Parse([]byte(s))
