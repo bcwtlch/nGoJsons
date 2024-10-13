@@ -1,0 +1,148 @@
+package parse
+
+import (
+	"fmt"
+	"testing"
+)
+
+func TestValueInvalidConversion(t *testing.T) {
+
+	v, err := Parse([]byte(`[{},[],"",123.45,true,null]`))
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	arr, err := v.Array()
+	if err != nil {
+		t.Fatalf("Array error: %s", err)
+	}
+
+	for _, v := range arr {
+		str, err := v.Float64()
+		if err != nil {
+			t.Fatalf("str error: %s", err)
+		}
+		fmt.Println(str)
+	}
+}
+
+func TestValueFloat64(t *testing.T) {
+
+	v, err := Parse([]byte(`	{ "zero_float1": 1.3456,
+		"zero_float2": -0e123,
+		"inf_float": Inf,
+		"minus_inf_float": -Inf,
+		"nan": nan }`))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	f, err := v.Get("zero_float1").Float64()
+	if err != nil {
+		t.Fatalf("str error: %s", err)
+	}
+	fmt.Println(f)
+
+	f, err = v.Get("zero_float2").Float64()
+	if err != nil {
+		t.Fatalf("str error: %s", err)
+	}
+	fmt.Println(f)
+
+	f, err = v.Get("inf_float").Float64()
+	if err != nil {
+		t.Fatalf("str error: %s", err)
+	}
+	fmt.Println(f)
+
+	f, err = v.Get("minus_inf_float").Float64()
+	if err != nil {
+		t.Fatalf("str error: %s", err)
+	}
+	fmt.Println(f)
+
+	f, err = v.Get("nan").Float64()
+	if err != nil {
+		t.Fatalf("str error: %s", err)
+	}
+	fmt.Println(f)
+}
+
+func TestValueBool(t *testing.T) {
+	s := `{"foo":[{"bar":{"baz":123,"x":"434"},"y":[]},[null, false]],"qwe":false}`
+	v, err := Parse([]byte(s))
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	b, err := v.Get("qwe").Bool()
+	if err != nil {
+		t.Fatalf("qwe bool fail %s", err)
+	}
+	t.Log(b)
+
+	arr, err := v.Get("foo").Array()
+	if err != nil {
+		t.Fatalf("foo arr fail %s", err)
+	}
+
+	for i, v := range arr {
+		if i == 0 {
+			m, err := v.Get("bar").Get("baz").Int()
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Log(m)
+			xstr, err := v.Get("bar").Get("x").String()
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Log(xstr)
+
+			ystr, err := v.Get("y").String()
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Log(ystr)
+		} else if i == 1 { //
+			if v.TypeOf() == TypeArray {
+				v1, err := v.Array()
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, v2 := range v1 {
+					if v2.TypeOf() == TypeFalse || v2.TypeOf() == TypeTrue {
+						b, _ := v2.Bool()
+						t.Log(b)
+					} else if v2.TypeOf() == TypeNumber {
+						f, _ := v2.Float64()
+						t.Log(f)
+					} else {
+						str, _ := v2.String()
+						t.Log(str)
+					}
+				}
+			} else {
+				str, err := v.String()
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Log(str)
+			}
+			//v1, err := v.Array()
+			//if err != nil {
+			//	t.Fatal(err)
+			//}
+			//for _, v2 := range v1 {
+			//	//str, err := v2.String()
+			//	//if err != nil {
+			//	//	t.Fatal(err)
+			//	//}
+			//	//t.Log(str)
+			//
+			//} //for _, v2 := range v1 {
+		}
+
+	}
+}
