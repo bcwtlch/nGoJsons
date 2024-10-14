@@ -34,10 +34,10 @@ func SetParseFrame(v ParseFrame) ParseOption {
 	}
 }
 
-//default SimpleJsonFrame
+//default JsonIterFrame
 
 func Parse(data []byte, opts ...ParseOption) (ijsoner.IJsonParseRet, error) {
-	t := SimpleJsonFrame
+	t := JsonIterFrame
 	if len(opts) > 0 {
 		cfg := &config{}
 		opt := opts[0]
@@ -45,6 +45,12 @@ func Parse(data []byte, opts ...ParseOption) (ijsoner.IJsonParseRet, error) {
 		t = cfg.t
 	}
 	return parse(data, t)
+}
+
+func ReleaseCache(jsonparser ijsoner.IJsonParseRet) {
+	if parser, ok := jsonparser.(interface{ ReleaseParseCache() }); ok {
+		parser.ReleaseParseCache()
+	}
 }
 
 func parse(data []byte, t ParseFrame) (ijsoner.IJsonParseRet, error) {
@@ -62,6 +68,6 @@ func parse(data []byte, t ParseFrame) (ijsoner.IJsonParseRet, error) {
 	case SonicFrame:
 		return pSonic.Parse(data)
 	default:
-		return pSimpleJson.Parse(data)
+		return pJsonIter.Parse(data)
 	}
 }

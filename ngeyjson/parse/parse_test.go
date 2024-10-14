@@ -12,13 +12,20 @@ func TestValueInvalidConversion(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
+	vstr, err := v.String()
+	if err != nil {
+		t.Fatalf("v.String error: %s", err)
+	}
+
+	t.Log(vstr)
+	
 	arr, err := v.Array()
 	if err != nil {
 		t.Fatalf("Array error: %s", err)
 	}
 
-	for _, v := range arr {
-		str, err := v.Float64()
+	for _, v1 := range arr {
+		str, err := v1.String()
 		if err != nil {
 			t.Fatalf("str error: %s", err)
 		}

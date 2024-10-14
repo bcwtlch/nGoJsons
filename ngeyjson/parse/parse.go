@@ -106,7 +106,7 @@ var (
 var mParserPool ParserPool
 
 func Parse(b []byte) (*Node, error) {
-	p := &Parser{} //mParserPool.Get()
+	p := mParserPool.Get() // &Parser{}
 	v, err := p.Parse(b)
 	return &Node{p: p, value: v, err: err}, err
 }
@@ -126,9 +126,12 @@ func ParseFn(b []byte, fn func(*Node) error) error {
 
 /*  Node implements external interface */
 
-func (node *Node) TypeOf() Type {
+func (node *Node) Type() Type {
 	if node == nil || node.value == nil {
 		return TypeNil
+	}
+	if node.value.t == typeRawString {
+		return TypeString
 	}
 	return node.value.t
 }
@@ -139,6 +142,12 @@ func (node *Node) SetErr(err error) {
 
 func (node *Node) Err() error {
 	return node.err
+}
+
+func (node *Node) ReleaseParseCache() {
+	if node.p != nil {
+		mParserPool.Put(node.p)
+	}
 }
 
 func (node *Node) Get(key string) *Node {
@@ -293,6 +302,9 @@ func (node *Node) parsenewstring(start, end int32, t Type) (string, error) {
 	} else if t == typeRawString || t == TypeString {
 		cs = '"'
 		ce = '"'
+		if start == end && node.p.s[start] == '"' {
+			return `""`, nil
+		}
 	}
 
 	for i := int(start); i >= 0; i-- {
@@ -326,8 +338,8 @@ func (node *Node) string() (string, error) {
 		return "true", nil
 	case TypeFalse:
 		return "false", nil
-	case TypeNull:
-		return "null", nil
+		//case TypeNull:
+		//	return "null", nil
 	}
 
 	start, end, err := node.value.Data()
@@ -339,6 +351,8 @@ func (node *Node) string() (string, error) {
 	var dst []byte
 
 	switch node.value.t {
+	case TypeNull:
+		return s, nil
 	case TypeNumber:
 		return s, nil
 	case TypeString: //
@@ -574,8 +588,14 @@ func parseValue(s string, c *cache, depth int, soffset *int) (*Value, string, er
 			}
 			return nil, s, fmt.Errorf("unexpected value found: %q", s)
 		}
+
+		v := c.getValue()
+		v.t = TypeNull
+		v.spos = int32(*soffset) + 0
+		v.epos = int32(*soffset) + 4
 		*soffset += 4
-		return valueNull, s[len("null"):], nil
+		return v, s[4:], nil
+		//return valueNull, s[len("null"):], nil
 	}
 
 	start, end, tail, err := parseRawNumber(s)

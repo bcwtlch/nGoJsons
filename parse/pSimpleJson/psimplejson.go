@@ -54,16 +54,11 @@ func (item *Item) String() (string, error) {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-	switch v.Kind() {
-	case reflect.Slice, reflect.Array, reflect.Map:
-		x := v.Interface()
-		bytes, err := json.Marshal(x)
-		if err != nil {
-			return "", err
-		}
-		return string(bytes), nil
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return "", err
 	}
-	return item.sjson.String()
+	return string(bytes), nil
 }
 
 func (item *Item) Bool() (bool, error) {

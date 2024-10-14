@@ -27,6 +27,9 @@ func TestParseNull(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		defer func() {
+			ReleaseParseCache(parse)
+		}()
 		strnull, err := parse.Get("138586353").String() // .Get("description").String()
 		if err != nil {
 			t.Fatal(err)
@@ -40,6 +43,9 @@ func TestParseNull(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		defer func() {
+			ReleaseParseCache(parse)
+		}()
 		strnull, err := parse.Get("138586353").Get("description").String()
 		if err != nil {
 			t.Fatal(err)
@@ -65,6 +71,9 @@ func TestParseFloat(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		defer func() {
+			ReleaseParseCache(parse)
+		}()
 		strnull, err := parse.Get("zero_float2").Float64() // .Get("description").String()
 		if err != nil {
 			t.Fatal(err)

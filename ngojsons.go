@@ -128,27 +128,6 @@ func Indent(dst *bytes.Buffer, src []byte, prefix, idx string, opts ...Option) e
 	}
 }
 
-func Unmarshal(data []byte, v interface{}, opts ...Option) error {
-	mJsonFrame := StdlibJsonFrame
-	if len(opts) > 0 {
-		cfg := &config{}
-		opts[0](cfg)
-		mJsonFrame = cfg.t
-	}
-	switch mJsonFrame {
-	case StdlibJsonFrame:
-		return json.Unmarshal(data, v)
-	case GoJsonFrame:
-		return gojson.Unmarshal(data, v)
-	case SonicJsonFrame:
-		return sonic.Unmarshal(data, v)
-	case JsonIterJsonFrame:
-		return jsoniter.Unmarshal(data, v)
-	default:
-		return json.Unmarshal(data, v)
-	}
-}
-
 func Valid(data []byte, opts ...Option) bool {
 	mJsonFrame := StdlibJsonFrame
 	if len(opts) > 0 {
@@ -167,6 +146,27 @@ func Valid(data []byte, opts ...Option) bool {
 		return jsoniter.Valid(data)
 	default:
 		return json.Valid(data)
+	}
+}
+
+func Unmarshal(data []byte, v interface{}, opts ...Option) error {
+	mJsonFrame := StdlibJsonFrame
+	if len(opts) > 0 {
+		cfg := &config{}
+		opts[0](cfg)
+		mJsonFrame = cfg.t
+	}
+	switch mJsonFrame {
+	case StdlibJsonFrame:
+		return json.Unmarshal(data, v)
+	case GoJsonFrame:
+		return gojson.Unmarshal(data, v)
+	case SonicJsonFrame:
+		return sonic.Unmarshal(data, v)
+	case JsonIterJsonFrame:
+		return jsoniter.Unmarshal(data, v)
+	default:
+		return json.Unmarshal(data, v)
 	}
 }
 
