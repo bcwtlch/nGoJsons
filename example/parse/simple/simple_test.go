@@ -14,13 +14,13 @@ func TestJson1(t *testing.T) {
 
 		vstr, err := v.String()
 		if err != nil {
-			t.Fatalf("v.String error: %s", err)
+			t.Fatal(err)
 		}
 		t.Log(vstr)
 
 		vstr, err = v.Get("name").String()
 		if err != nil {
-			t.Fatalf("v.Get(\"foo\").String error: %s", err)
+			t.Fatal(err)
 		}
 		t.Log(vstr)
 
