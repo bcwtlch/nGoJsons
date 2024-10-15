@@ -1,17 +1,14 @@
 # nGoJsons
-A fully integrated JSON serialization and deserialization library, especially the Get feature.
+  一个全新集成的开源库。包括2个层面功能。
+  - 兼容官方库的序列反序列化接口
+  - 支持Get的部分获取json数据.
 
-A new integrated open source library. Include two levels of function. 
-- Marshal And Unmarshal interface compatible with go json library
-- Get interface supported part to obtain json data
+##  特点：
+- 官方的接口完全统一了对外的调用方式。
+- Get的功能统一了对外接口
 
-
-##  Features：
-- The go sdk interface completely unifies the external calling method
-- The Get interface unifies the external interface.
-
-## Interface：
-- go sdk Interface
+## 接口：
+- 官方接口
 ```go
 type Decoder interface {
 	Decode(val interface{}) error
@@ -37,7 +34,7 @@ NewDecoder
 NewEncoder
 ```
 
-- Get Interface
+- Get接口
 ```go
 type IJsonParseRet interface {
 	Get(key string) IJsonParseRet
@@ -54,8 +51,8 @@ type IJsonParseRet interface {
 }
 ```
 
-## Integrated Json open source library
-- go sdk Interface Support
+## 集成的Json开源库
+- 官方接口
 - - stdlib
 - - go-json
 - - json-iterator
@@ -63,7 +60,7 @@ type IJsonParseRet interface {
 
 
 
-- Get Interface Support
+- Get接口
 - - FastJson
 - - json-iterator
 - - sonic
@@ -71,17 +68,14 @@ type IJsonParseRet interface {
 - - jsonparser
 - - ngeyjson
 
-Among them, ngeyjson is an open source json library with my own characteristics,
-including ngeyjson-parse(Get interface) and support for Marshal and Unmarshal of go sdk library interfaces.
-Because Marshal and Unmarshal are still immature, it is not open source for the time being.
-Detail See About-ngeyjson for the design of ngeyjson.
+其中ngeyjson是我独立开发的有自己特色的开源json库，包括 ngeyjson-parse（Get接口）以及对官方接口序列化和反序列化的
+接口的支持。由于序列化和反序列化还不成熟，暂不开源。 关于ngeyjson的设计见 About ngeyjson.
 
 
+## 用法
 
-## Usage
-
-### Marshal/Unmarshal etc.
-See the demo use case below for simple use. Please refer to the example  package for details.
+### 序列化和反序列化
+简单使用见下面的demo用例：具体可参考example部分
 ```go
 func testMarshal() {
 	var s = struct {
@@ -134,8 +128,8 @@ func testMarshal() {
 }
 ```
 
-### Get Usage
-See the demo use case below for simple use. Please refer to the example  package for details
+### Get用法
+简单示例：具体见example部分
 ```go
 func TestJson1(t *testing.T) {
 	s := []byte(`{"name":{"first":"Janet","last":"Prichard"},"age":47}`)
@@ -231,9 +225,6 @@ func TestJson1(t *testing.T) {
 	})
 }
 ```
-
-
-
 
 
 

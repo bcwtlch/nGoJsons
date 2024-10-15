@@ -43,7 +43,11 @@ func (item *Item) String() (string, error) {
 	if item.node == nil {
 		return "", fmt.Errorf("sonic-String item.node==nil")
 	}
-	return item.node.String()
+	str, err := item.node.String()
+	if err != nil {
+		return item.node.Raw()
+	}
+	return str, nil
 }
 
 func (item *Item) Bool() (bool, error) {

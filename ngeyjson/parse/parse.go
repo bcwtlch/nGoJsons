@@ -366,7 +366,11 @@ func (node *Node) string() (string, error) {
 	case TypeObject:
 		return node.parsenewstring(start, end, node.value.t)
 	case typeRawString:
-		return node.parsenewstring(start, end, node.value.t)
+		if !hasSpecialChars(s) {
+			return s, nil
+		}
+		return unescapeStringBestEffort(s), nil
+		//return s, nil //node.parsenewstring(start, end, node.value.t)
 	}
 	return s, nil
 }
